@@ -41,7 +41,7 @@ FileDescriptor::FileDescriptor(char *fileName){
     line_number = 0;
     char* filePath = new char[strlen(fileName) + 5];
     strcpy(filePath, fileName);
-    strcat(filePath, ".txt"); 
+    strcat(filePath, ".txt");
     fp = fopen(filePath,"r");
     if(fp == NULL){
         strcpy(error, "Please open the file first");
@@ -88,23 +88,34 @@ void FileDescriptor::close(){
 }
 
 char FileDescriptor::getChar(){
-    
+
     char currentChar;
-    currentChar = fgetc(fp);
-    if(currentChar == '\n'){
+    currentChar = (char)fgetc(fp);
+    buffer[char_number] = currentChar;
+    if(currentChar == 10){
         char_number = 0;
         line_number++;
     }
     else
         char_number++;
-
+    buffer[char_number+1] = '\0';
     return currentChar;
 }
 
 void FileDescriptor::reportError (char* msg){
-    printf("%s",error);
+    printf("Error %s in line %d \n",msg, line_number);
+    printf("Line %d: %s\n",line_number,buffer);
+    for(int i = 0; i < char_number; i++){
+        printf(" ");
+    }
+    printf("       ^");
 }
 
 void FileDescriptor::ungetChar (char c){
     char_number--;
+    fseek(fp, -1, SEEK_CUR);
+}
+
+int FileDescriptor::getBufferSize(){
+    return bufSize;
 }

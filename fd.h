@@ -38,6 +38,7 @@ public:
     void reportError (char *msg); // reports the error specifying the current line and
     //character
     void ungetChar (char c); // puts back the current character, modifies char number
+    int getBufferSize(); // gets the buffer size
 };
 
 #endif

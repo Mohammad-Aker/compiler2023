@@ -1,48 +1,46 @@
 #include <iostream>
-#include "fd.h"
-#include "scanner.h"
+#include "FileDescriptor.cpp"
+#include "scanner.cpp"
+
 
 int main()
 {
     // Open the input file
-    const char *inputFileName = "input.comp2023";
+    char inputFileName[] = "C:\\Users\\shadi\\CLionProjects\\compiler\\main";
     FileDescriptor fd(inputFileName);
 
+//    SCANNER s(&fd);
+
     // Check if the file was opened successfully
-    if (!fd.isOpen())
-    {
-        fd.reportError("Failed to open the input file.");
-        return 1;
-    }
+     if (!fd.isOpen())
+     {
+         printf("file is not open correctly");
+         return 1;
+     }
 
     // Create a scanner object
     SCANNER scanner(&fd);
-
-    // Scan and print the tokens
+     // Scan and print the tokens
     TOKEN *token;
     while ((token = scanner.Scan())->type != lx_eof)
     {
-        switch (token->type)
-        {
-        case lx_identifier:
-            std::cout << "Identifier: " << token->str_ptr << std::endl;
+        if(token->type == lx_error){
             break;
-        case lx_integer:
-            std::cout << "Integer: " << token->value << std::endl;
-            break;
-        case lx_string:
-            std::cout << "String: " << token->str_ptr << std::endl;
-            break;
-        case lx_float:
-            std::cout << "Float: " << token->float_value << std::endl;
-            break;
-        // Add cases for other token types if needed
-        default:
-            std::cout << "Token Type: " << token->type << std::endl;
         }
-    }
+        std::cout << "Token Type: "<< TOKEN_NAMES[token->type];
+        if(token->type == lx_integer){
+            std::cout << ", Token Value: "<< token->value;
+        }
+        else if(token->type == lx_float){
+            std::cout << ", Token Value: "<< token->float_value;
+        }
+        else if(token->type == lx_identifier || token->type == lx_string){
+            std::cout << ", Token Value: "<< token->str_ptr;
+        }
 
-    // Close the input file
+        std::cout << std::endl;
+    }
+//     Close the input file
     fd.close();
 
     return 0;

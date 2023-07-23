@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.24)
-project(comp2023)
+cmake_minimum_required(VERSION 3.21)
+project(compiler)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
-add_executable(comp2023 main.cpp scanner.h)
+add_executable(compiler main.cpp)

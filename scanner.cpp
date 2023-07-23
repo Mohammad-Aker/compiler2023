@@ -1,93 +1,97 @@
 #include "scanner.h"
 #include <cstdlib>
 #include <cstring>
-#include <cctype> 
-
+#include <ctype.h>
 
 SCANNER::SCANNER()
 {
     Fd = nullptr;
 }
 
-TOKEN *SCANNER::Scan()
-{
-    char ch;
-    TOKEN *tok = new TOKEN;
-    tok->str_ptr = nullptr;
+SCANNER::SCANNER(FileDescriptor* fd){
+      Fd = fd; 
+}
 
+TOKEN* SCANNER::get_int()
+{
+
+    char ch;
+    char *str = new char[Fd->getBufferSize()];
+    int index = 0;
+
+    bool is_float = false; 
+    bool is_negative = false;
+    bool errorFlage = false;
+  
+    ch = Fd->getChar();
+    if (ch == '-')
+    {
+        is_negative = true;
+        str[index++] = ch;
+    }
+    else
+    {
+        Fd->ungetChar(ch); // Put back the character if it's not a negative sign
+    }
+
+    // Read digits until an invalid character is found
     while ((ch = Fd->getChar()) != EOF)
     {
-        // Handle whitespace characters
-        if (isspace(ch))
+        if (isdigit(ch))
         {
-            // Skip whitespace characters
-            continue;
+            str[index++] = ch;
         }
-
-        // Handle comments
-        if (ch == '#')
+        else if (ch == '.')
         {
-            Fd->ungetChar(ch); // Put back '#' for skip_comments() to handle
-            skip_comments();
-            continue;
+            // If a dot is found, it's a float, not an integer
+            is_float = true;
+            str[index++] = ch;
         }
-
-        // Handle integers and floats
-        if (isdigit(ch) || ch == '-')
-        {
-            Fd->ungetChar(ch); // Put back the character for get_int() to handle
-            tok = get_int();
+        else if(ch == ';' || ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r'){
+            Fd->ungetChar(ch); // Put back the invalid character
             break;
         }
-
-        // Handle strings
-        if (ch == '"')
+        else if(isalpha(ch))
         {
-            Fd->ungetChar(ch); // Put back the double quote for get_string() to handle
-            tok = get_string();
+            char* error = "Identifier cannot start with a number";
+            Fd->reportError(error);
+            errorFlage = true;
+            break;
+        } else{
+            Fd->ungetChar(ch); // Put back the invalid character
             break;
         }
-
-        // Handle identifiers and keywords
-        if (isalpha(ch) || ch == '_')
-        {
-            Fd->ungetChar(ch); // Put back the character for get_id() to handle
-            tok = get_id();
-            break;
-        }
-
-        // Handle special characters and operators
-        switch (ch)
-        {
-        case '(':
-            tok->type = lx_Iparen;
-            break;
-        case ')':
-            tok->type = lx_rparen;
-            break;
-        // Add handling for other special characters and operators here
-        default:
-            // Handle unrecognized characters as an error
-            Fd->reportError("Unrecognized character");
-            exit(EXIT_FAILURE);
-        }
-        break;
     }
 
-    // Return EOF token if the end of file is reached
-    if (ch == EOF)
+    str[index] = '\0'; // Null-terminate the string
+    TOKEN *tok = new TOKEN;
+    LEXEM_TYPE type;
+
+    if(errorFlage){
+        tok->type = lx_error;
+        tok->str_ptr = nullptr;
+        return tok;
+    }
+
+    if (is_float)
     {
-        tok->type = lx_eof;
-        tok->value = 0;
-        tok->float_value = 0.0;
+        // If it's a float, set the type to lx_float and convert the string to float
+        tok->type = lx_float;
+        tok->float_value = atof(str);
+    }
+    else
+    {
+        // If it's an integer, set the type to lx_integer and convert the string to integer
+        tok->type = lx_integer;
+        tok->value = atoi(str);
     }
 
+    delete[] str; // Free the memory allocated for the string
     return tok;
 }
 
 void SCANNER::skip_comments()
 {
-
     char ch;
     while ((ch = Fd->getChar()) != EOF)
     {
@@ -98,7 +102,6 @@ void SCANNER::skip_comments()
 
 bool SCANNER::check_keyword(const char *str)
 {
-
     int low = 0;
     int high = keys - 1;
     while (low <= high)
@@ -115,34 +118,46 @@ bool SCANNER::check_keyword(const char *str)
     return false;
 }
 
-TOKEN* SCANNER::get_id(FileDescriptor* fd, char firstChar)
+TOKEN* SCANNER::get_id()
 {
 
     char ch;
-    char *str = new char[Fd->bufSize];
+    char *str = new char[Fd->getBufferSize()];
     int index = 0;
-
+    bool errorFlage = false;
     // Read characters until an invalid character is found
     while ((ch = Fd->getChar()) != EOF)
     {
         if (isalnum(ch) || ch == '_')
         {
             str[index++] = ch;
+
+        }
+        else if(ch == ';' || ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r'){
+            Fd->ungetChar(ch); // Put back the invalid character
+            break;
         }
         else
         {
-            Fd->ungetChar(ch); // Put back the invalid character
+            char* error = "Illegal character";
+            Fd->reportError(error);
+            errorFlage = true;
             break;
         }
     }
 
+
     str[index] = '\0';  
     TOKEN *tok = new TOKEN;
 
-   
+    if(errorFlage){
+        tok->type = lx_error;
+        tok->str_ptr = nullptr;
+        return tok;
+    }
+
     if (check_keyword(str))
     {
-
         int keyword_index = -1;
         for (int i = 0; i < keys; i++)
         {
@@ -152,6 +167,7 @@ TOKEN* SCANNER::get_id(FileDescriptor* fd, char firstChar)
                 break;
             }
         }
+
         tok->type = key_type[keyword_index];
     }
     else
@@ -165,12 +181,11 @@ TOKEN* SCANNER::get_id(FileDescriptor* fd, char firstChar)
     return tok;
 }
 
-TOKEN* SCANNER::get_string(FileDescriptor* fd) {
-
+TOKEN* SCANNER::get_string()
 {
     
     char ch;
-    char *str = new char[Fd->bufSize];
+    char *str = new char[Fd->getBufferSize()];
     int index = 0;
 
     bool escaped = false; // To handle escape sequences
@@ -217,64 +232,149 @@ TOKEN* SCANNER::get_string(FileDescriptor* fd) {
     return tok;
 }
 
-TOKEN* SCANNER::get_int(FileDescriptor* fd, char firstChar)
+TOKEN *SCANNER::Scan()
 {
-
     char ch;
-    char *str = new char[Fd->bufSize];
-    int index = 0;
+    TOKEN *token = new TOKEN;
+    token->str_ptr = nullptr;
 
-    bool is_float = false; 
-    bool is_negative = false;
-
-  
-    ch = Fd->getChar();
-    if (ch == '-')
-    {
-        is_negative = true;
-        str[index++] = ch;
-    }
-    else
-    {
-        Fd->ungetChar(ch); // Put back the character if it's not a negative sign
-    }
-
-    // Read digits until an invalid character is found
     while ((ch = Fd->getChar()) != EOF)
     {
-        if (isdigit(ch))
+        // Handle whitespace characters
+        if (isspace(ch))
         {
-            str[index++] = ch;
+            continue;
         }
-        else if (ch == '.')
+
+        // Handle comments
+        if (ch == '#')
         {
-            // If a dot is found, it's a float, not an integer
-            is_float = true;
-            str[index++] = ch;
+            Fd->ungetChar(ch); // Put back '#' for skip_comments() to handle
+            skip_comments();
+            continue;
         }
-        else
+
+        // Handle integers and floats
+        if (isdigit(ch) || ch == '-')
         {
-            Fd->ungetChar(ch); // Put back the invalid character
+            Fd->ungetChar(ch); // Put back the character for get_int() to handle
+            token = get_int();
             break;
         }
+
+        // Handle strings
+        if (ch == '"')
+        {
+            token = get_string();
+            break;
+        }
+        // Handle identifiers and keywords
+
+        if (isalpha(ch) || ch == '_')
+        {
+            Fd->ungetChar(ch); // Put back the character for get_id() to handle
+            token = get_id();
+            break;
+        }
+
+        if (ch == ':'){
+            if((ch = Fd->getChar()) == '='){
+                token->type = lx_colon_eq;
+                break;
+            } else {
+                token->type = lx_colon;
+                Fd->ungetChar(ch);
+                break;
+            }
+        }
+
+        if(ch == '!'){
+            if((ch = Fd->getChar()) == '='){
+                token->type = lx_neq;
+                break;
+            }
+            else
+                Fd->ungetChar(ch);
+        }
+
+        if(ch == '<'){
+            if((ch = Fd->getChar()) == '='){
+                token->type = lx_le;
+                break;
+            }
+            else
+                Fd->ungetChar(ch);
+        }
+
+        if(ch == '>'){
+            if((ch = Fd->getChar()) == '='){
+                token->type = lx_ge;
+                break;
+            }
+            else
+                Fd->ungetChar(ch);
+        }
+
+        // Handle special characters and operators
+        switch (ch)
+        {
+            case '(':
+                token->type = lx_lparen;
+                break;
+            case ')':
+                token->type = lx_rparen;
+                break;
+            case '[':
+                token->type = lx_lbracket;
+                break;
+            case ']':
+                token->type = lx_rbracket;
+                break;
+            case '.':
+                token->type = lx_dot;
+                break;
+            case ';':
+                token->type = lx_semicolon;
+                break;
+            case ',':
+                token->type = lx_comma;
+                break;
+            case '+':
+                token->type = lx_plus;
+                break;
+            case '-':
+                token->type = lx_minus;
+                break;
+            case '*':
+                token->type = lx_star;
+                break;
+            case '/':
+                token->type = lx_slash;
+                break;
+            case '=':
+                token->type = lx_eq;
+                break;
+            case '<':
+                token->type = lx_lt;
+                break;
+            case '>':
+                token->type = lx_gt;
+                break;
+            default:
+                // Handle unrecognized characters as an error
+                char* error = "Unrecognized character\0";
+                Fd->reportError(error);
+                exit(EXIT_FAILURE);
+        }
+        break;
     }
-
-    str[index] = '\0'; // Null-terminate the string
-    TOKEN *tok = new TOKEN;
-
-    if (is_float)
+    // Return EOF token if the end of file is reached
+    if (ch == EOF)
     {
-        // If it's a float, set the type to lx_float and convert the string to float
-        tok->type = lx_float;
-        tok->float_value = is_negative ? -atof(str) : atof(str);
-    }
-    else
-    {
-        // If it's an integer, set the type to lx_integer and convert the string to integer
-        tok->type = lx_integer;
-        tok->value = is_negative ? -atoi(str) : atoi(str);
+        token->type = lx_eof;
+        token->value = 0;
+        token->float_value = 0.0;
     }
 
-    delete[] str; // Free the memory allocated for the string
-    return tok;
+    return token;
 }

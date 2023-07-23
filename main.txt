@@ -1,1 +1,2 @@
-shadi
+x shadi 123 12.61 -11 -12.56 "shadi" ( ) ; <= >= +  * / begin shad
+float x; shadi23 5+3  /
