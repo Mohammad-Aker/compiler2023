@@ -5,13 +5,9 @@
 
 int main()
 {
-    // Open the input file
     char inputFileName[] = "C:\\Users\\shadi\\CLionProjects\\compiler\\main";
     FileDescriptor fd(inputFileName);
 
-//    SCANNER s(&fd);
-
-    // Check if the file was opened successfully
      if (!fd.isOpen())
      {
          printf("file is not open correctly");
@@ -40,7 +36,9 @@ int main()
 
         std::cout << std::endl;
     }
-//     Close the input file
+    if(token->type != lx_error)
+        std::cout << "Token Type: "<< TOKEN_NAMES[token->type];
+
     fd.close();
 
     return 0;

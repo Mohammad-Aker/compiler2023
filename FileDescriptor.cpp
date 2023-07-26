@@ -103,16 +103,21 @@ char FileDescriptor::getChar(){
 }
 
 void FileDescriptor::reportError (char* msg){
+    line_number++;
     printf("Error %s in line %d \n",msg, line_number);
-    printf("Line %d: %s\n",line_number,buffer);
+    printf("Error -> %s\n",buffer);
     for(int i = 0; i < char_number; i++){
         printf(" ");
     }
-    printf("       ^");
+    printf("         ^");
+    this->close();
 }
 
 void FileDescriptor::ungetChar (char c){
     char_number--;
+    if(c == 10){
+        line_number--;
+    }
     fseek(fp, -1, SEEK_CUR);
 }
 

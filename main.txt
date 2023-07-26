@@ -1,2 +1,49 @@
-x shadi 123 12.61 -11 -12.56 "shadi" ( ) ; <= >= +  * / begin shad
-float x; shadi23 5+3  /
+## Dummy code example in COMP2023
+
+## Define some variables
+program var constant integer bool string float true false if fi then else while do od and or read write for from to by := + - * / = != < <= > >= . ; [] , { }
+
+## Assign values to variables
+A_Funny33COMP2023dentifier = 42
+x = -10
+z101 = 3.14
+dog = "a cute animal"
+DoG = "not the same as 'dog'"
+
+## Implement a simple loop
+from = 1
+to = 10
+by = 2
+
+for i := from to by do
+    write i
+od
+
+## Output: 1 3 5 7 9
+
+## Nested if-else statements
+if x > 0 then
+    y := 1
+else
+    y := -1
+fi
+
+## Read input and perform calculations
+read input_integer
+input_float := 3.14
+result := (input_integer + input_float) * x
+
+## String manipulation
+str1 = "Hello,"
+str2 = " World!"
+concatenated_string := str1 + str2
+
+## Output: "Hello, World!"
+
+## Comments
+## This is a comment, it won't be returned as a token by the scanner ##
+## Another comment that spans multiple lines until the end of line
+
+## 1. ;
+## 1231361shadi
+## ~ ;
