@@ -1,0 +1,28 @@
+Area1234 = 17 ;
+123  , - , + [   ] 
+z1 := ( 34*xy + func(x) - 64 ) ;
+## following are all keywords
+var while write
+and begin boolean by constant
+do else end false fi float for from
+function if integer not od or procedure
+program read return string then to true
+
+## this a one line comment
+
+while x <= 15
+begin
+ variable :=  x >= y ;## := should be one token
+ z := y + yy != 56
+end
+## following are illegal tokens
+##34xyz
+##?
+##$
+
+
+"test string"
+## following should be identifiers not keywords
+IF   While   Float
+## Following is short comment, should recognize X, Y as Identifiers
+X ##short comment ## Y
