@@ -1,0 +1,97 @@
+var x : integer;
+var y: integer;
+var z: integer;
+var i: integer;
+var name: string;
+constant flag = true;
+
+## Test Comment
+
+function compute (a: integer, b: integer, f: integer) : integer
+begin
+    var result : integer;
+    var re : integer;
+
+    if (z/2 = 0) then
+       z := z + 2
+    else
+       z := z + 1
+    fi;
+
+    return (result);
+end;
+
+procedure print(x: integer)
+begin
+    write(x);
+end;
+
+procedure scanf(x: integer)
+begin
+    read(x);
+end;
+
+function calculate(a: integer, b: integer, c: integer, d: integer): integer
+begin
+var e: integer;
+var f: integer;
+var g: integer;
+var h: integer;
+var i: integer;
+var j: integer;
+var k: integer;
+var l: integer;
+
+    e := 5 * 4 and 3 / 2;
+    e := a + b * c - d;
+    f := (a + b) * c - d;
+    g := a * b + c / d;
+    h := a + b * c / d;
+
+    i := e * f + g / h;
+    j := (e + f) * (g - h);
+    k := i * (j - e) + f / h;
+    l := k * (i + j) - (e + f * g) / h;
+
+    return (l);
+end;
+
+function main () : integer
+begin
+    var a: integer;
+    var b: integer;
+    var c: integer;
+    var d: integer;
+    var result: integer;
+
+    a := 2;
+    b := 3;
+    c := 4;
+    d := 5;
+
+    result := calculate(a, b, c, d);
+    write(result);
+
+    name := "DummyTest";
+    x := 12;
+    y := 10;
+    z := compute(x,y,flag) + x;
+
+    for i := 0 to 9 do
+        begin
+          z := x * 2 + y/3;
+          while z < 50 do
+            begin
+              if (z/2 = 0) then
+                z := z + 2
+              else
+                z := z + 1
+              fi;
+                  end
+                    od;
+
+
+end
+od;
+return (0);
+end;
